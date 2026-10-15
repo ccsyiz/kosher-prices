@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+</head>
+<body>
+<!--page-->
+<title>Evergreen vs Wesley</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500;62..125,700;62..125,800&family=Source+Sans+3:wght@400;600;700&display=swap">
+<style>
+/* Layout: one column of shelf-tag rows; each product shows both stores' tags side by side, the cheaper one lit. A basket bar docks at the bottom. */
+:root {
+  --bg: #f3f5f2;
+  --surface: #ffffff;
+  --ink: #17221d;
+  --muted: #5d6a63;
+  --line: #d9dfda;
+  --ever: #1f6b45;        /* Evergreen */
+  --ever-soft: #e3f1e8;
+  --wes: #23508f;         /* Wesley */
+  --wes-soft: #e4ecf8;
+  --sale: #f7d64a;        /* yellow sale tag, as on the shelf */
+  --sale-ink: #3a2f00;
+  --focus: #b6862a;
+  --font-display: "Archivo", "Arial Narrow", system-ui, sans-serif;
+  --font-body: "Source Sans 3", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #101613; --surface: #18201c; --ink: #e6ece8; --muted: #9aa7a0; --line: #2b3530;
+    --ever: #6cc796; --ever-soft: #193328; --wes: #8cb3ee; --wes-soft: #1a2638;
+    --sale: #e9c93c; --sale-ink: #2a2200; --focus: #e2b55a; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #101613; --surface: #18201c; --ink: #e6ece8; --muted: #9aa7a0; --line: #2b3530;
+  --ever: #6cc796; --ever-soft: #193328; --wes: #8cb3ee; --wes-soft: #1a2638;
+  --sale: #e9c93c; --sale-ink: #2a2200; --focus: #e2b55a; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font: 16px/1.45 var(--font-body);
+  font-variant-numeric: tabular-nums;
+}
+.wrap {
+  max-width: 980px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 28px 140px;
+  display: grid; gap: 22px;
+}
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+header { display: grid; gap: 6px; }
+.eyebrow { font: 700 12px/1 var(--font-display); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+h1 {
+  margin: 0; font: 800 clamp(34px, 7vw, 56px)/0.95 var(--font-display);
+  font-stretch: 75%; letter-spacing: -0.01em; text-wrap: balance;
+}
+h1 .e { color: var(--ever); } h1 .w { color: var(--wes); }
+h1 .vs { font-weight: 500; font-stretch: 100%; font-size: .45em; color: var(--muted); vertical-align: .55em; margin: 0 .2em; }
+.sub { margin: 0; color: var(--muted); max-width: 62ch; }
+.notice {
+  font-size: 14px; border: 1px dashed var(--line); border-radius: 8px; padding: 8px 12px; color: var(--muted);
+}
+
+.score { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.score div { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; display: grid; gap: 2px; }
+.score b { font: 800 28px/1 var(--font-display); font-stretch: 85%; }
+.score span { font-size: 13px; color: var(--muted); }
+.score .e b { color: var(--ever); } .score .w b { color: var(--wes); }
+
+.controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.controls input, .controls select {
+  font: inherit; font-size: 15px; color: var(--ink); background: var(--surface);
+  border: 1px solid var(--line); border-radius: 8px; padding: 9px 11px; min-width: 0;
+}
+#q { flex: 1 1 260px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  font: 600 14px/1 var(--font-body); padding: 8px 12px; border-radius: 999px; cursor: pointer;
+  border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+}
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.count { font-size: 14px; color: var(--muted); }
+
+.list { display: grid; gap: 8px; }
+.row {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+  display: grid; grid-template-columns: minmax(0, 1fr) 132px 132px 92px; align-items: stretch;
+}
+.info { padding: 12px 14px; min-width: 0; display: grid; gap: 2px; align-content: center; }
+.name { font-weight: 700; overflow-wrap: anywhere; }
+.meta { font-size: 13px; color: var(--muted); }
+.tag {
+  border-left: 1px solid var(--line); padding: 10px 12px; display: grid; align-content: center; gap: 3px; position: relative;
+}
+.tag .who { font: 700 11px/1 var(--font-display); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.tag .p { font: 800 24px/1 var(--font-display); font-stretch: 85%; }
+.tag .p small { font: 600 12px var(--font-body); color: var(--muted); }
+.tag .was { font-size: 12px; color: var(--muted); text-decoration: line-through; }
+.tag.best.e { background: var(--ever-soft); } .tag.best.e .p { color: var(--ever); }
+.tag.best.w { background: var(--wes-soft); } .tag.best.w .p { color: var(--wes); }
+.deal {
+  justify-self: start; background: var(--sale); color: var(--sale-ink);
+  font: 700 11px/1 var(--font-display); padding: 4px 6px; border-radius: 3px; letter-spacing: .02em;
+}
+.act { border-left: 1px solid var(--line); display: grid; place-items: center; padding: 8px; gap: 4px; text-align: center; }
+.diff { font-size: 12px; color: var(--muted); line-height: 1.2; }
+.add {
+  font: 700 13px var(--font-body); border: 1px solid var(--ink); background: transparent; color: var(--ink);
+  border-radius: 999px; padding: 6px 10px; cursor: pointer;
+}
+.add[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+.more { justify-self: center; }
+.more button { font: 600 15px var(--font-body); padding: 10px 18px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; }
+.empty { padding: 30px; text-align: center; color: var(--muted); }
+
+.basket {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 5;
+  background: var(--ink); color: var(--bg);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-top: 12px; padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+}
+.basket .in { max-width: 980px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 8px 22px; align-items: baseline; }
+.basket b { font: 800 20px/1 var(--font-display); font-stretch: 85%; }
+.basket .lab { font-size: 13px; opacity: .75; margin-right: 4px; }
+.basket .win { font-weight: 700; }
+.basket button { margin-left: auto; font: 600 13px var(--font-body); background: transparent; color: inherit; border: 1px solid currentColor; border-radius: 999px; padding: 5px 10px; cursor: pointer; }
+footer { font-size: 13px; color: var(--muted); display: grid; gap: 4px; }
+footer p { margin: 0; max-width: 70ch; }
+
+@media (max-width: 640px) {
+  .row { grid-template-columns: 1fr 1fr; }
+  .info { grid-column: 1 / -1; padding-bottom: 6px; }
+  .tag { border-left: 0; border-top: 1px solid var(--line); }
+  .tag.w { border-left: 1px solid var(--line); }
+  .act { grid-column: 1 / -1; border-left: 0; border-top: 1px solid var(--line); display: flex; justify-content: space-between; padding: 8px 14px; }
+  .score b { font-size: 22px; }
+}
+@media (prefers-reduced-motion: no-preference) { .row { transition: border-color .15s; } .row:hover { border-color: var(--muted); } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Monsey &amp; Pomona grocery prices</div>
+    <h1><span class="e">Evergreen</span><span class="vs">vs</span><span class="w">Wesley</span></h1>
+    <p class="sub">The same products at Evergreen Uptown (Pomona) and Wesley Kosher (Monsey), side by side. Prices come from each store's online shop and include today's sales.</p>
+    <div class="notice" id="notice" hidden></div>
+  </header>
+
+  <section class="score" aria-label="Which store is cheaper">
+    <div class="e"><b id="sE">0</b><span>cheaper at Evergreen</span></div>
+    <div class="w"><b id="sW">0</b><span>cheaper at Wesley</span></div>
+    <div><b id="sS">0</b><span>same price</span></div>
+  </section>
+
+  <section class="controls" aria-label="Find products">
+    <input id="q" type="search" placeholder="Search: cheerios, kedem, mozzarella…" autocomplete="off" aria-label="Search products">
+    <select id="cat" aria-label="Category"><option value="">All departments</option></select>
+    <select id="sort" aria-label="Sort">
+      <option value="diff">Biggest difference</option>
+      <option value="name">Name A–Z</option>
+      <option value="price">Lowest price</option>
+    </select>
+    <div class="chips" role="group" aria-label="Show">
+      <button class="chip" id="fAll" aria-pressed="true" data-f="all">All</button>
+      <button class="chip" id="fE" aria-pressed="false" data-f="e">Cheaper at Evergreen</button>
+      <button class="chip" id="fW" aria-pressed="false" data-f="w">Cheaper at Wesley</button>
+      <button class="chip" id="fSale" aria-pressed="false" data-f="sale">On sale</button>
+      <button class="chip" id="fBasket" aria-pressed="false" data-f="basket">My list</button>
+    </div>
+  </section>
+
+  <div class="count" id="count" aria-live="polite"></div>
+  <div class="list" id="list"></div>
+  <div class="more"><button id="moreBtn" hidden>Show more</button></div>
+
+  <footer>
+    <p id="updated"></p>
+    <p>Prices per pound are marked /lb; the final price depends on the weight you get. "2 for $6"-style deals only count when you buy the full amount, so they aren't used to pick the cheaper store. Online prices can differ from the shelf.</p>
+  </footer>
+</div>
+
+<div class="basket" id="basket" hidden>
+  <div class="in">
+    <span><span class="lab">My list</span><b id="bN">0</b> items</span>
+    <span><span class="lab">All at Evergreen</span><b id="bE">$0</b></span>
+    <span><span class="lab">All at Wesley</span><b id="bW">$0</b></span>
+    <span class="win" id="bWin"></span>
+    <button id="bClear">Clear list</button>
+  </div>
+</div>
+
+<script type="application/json" id="inline-data"></script>
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const money = n => "$" + n.toFixed(2);
+  const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  const PAGE = 60;
+  let items = [], shown = PAGE, filter = "all";
+  let basket = new Set();
+  try { basket = new Set(JSON.parse(localStorage.getItem("ev-wes-list") || "[]")); } catch (e) {}
+  const saveBasket = () => { try { localStorage.setItem("ev-wes-list", JSON.stringify([...basket])); } catch (e) {} };
+
+  const pays = (it, s) => it[s].pays;
+  const winner = it => { const e = pays(it, "evergreen"), w = pays(it, "wesley"); return e < w ? "e" : w < e ? "w" : "s"; };
+  const sizeText = it => {
+    if (it.byWeight) return "sold by weight";
+    if (!it.size) return "";
+    return `${+(+it.size).toFixed(2)} ${it.unit || ""}`.trim();
+  };
+
+  function tagHtml(it, key, cls, label) {
+    const s = it[key], sale = s.sale, best = winner(it) === cls;
+    const per = it.byWeight ? "<small>/lb</small>" : "";
+    let deal = "";
+    if (sale && sale.price) deal = `<span class="was">${money(s.price)}</span><span class="deal">${esc(sale.label)}</span>`;
+    else if (sale && sale.each) deal = `<span class="deal" title="${money(sale.each)} each when you buy ${sale.qty}">${esc(sale.label)}</span>`;
+    return `<div class="tag ${cls}${best ? " best" : ""}"><span class="who">${label}</span><span class="p">${money(s.pays)}${per}</span>${deal}</div>`;
+  }
+
+  function rowHtml(it) {
+    const e = pays(it, "evergreen"), w = pays(it, "wesley"), d = Math.abs(e - w), win = winner(it);
+    const diff = win === "s" ? "Same price" : `${money(d)} less at ${win === "e" ? "Evergreen" : "Wesley"}`;
+    const meta = [it.brand, sizeText(it), it.subcategory || it.category].filter(Boolean).join(" · ");
+    const on = basket.has(String(it.id));
+    return `<article class="row">
+      <div class="info"><span class="name">${esc(it.name)}</span><span class="meta">${esc(meta)}</span></div>
+      ${tagHtml(it, "evergreen", "e", "Evergreen")}
+      ${tagHtml(it, "wesley", "w", "Wesley")}
+      <div class="act"><span class="diff">${diff}</span><button class="add" data-id="${it.id}" aria-pressed="${on}">${on ? "On list" : "Add"}</button></div>
+    </article>`;
+  }
+
+  function current() {
+    const q = $("q").value.trim().toLowerCase().split(/\s+/).filter(Boolean);
+    const cat = $("cat").value;
+    let out = items.filter(it => {
+      if (cat && it.category !== cat) return false;
+      if (filter === "e" && winner(it) !== "e") return false;
+      if (filter === "w" && winner(it) !== "w") return false;
+      if (filter === "sale" && !(it.evergreen.sale || it.wesley.sale)) return false;
+      if (filter === "basket" && !basket.has(String(it.id))) return false;
+      if (q.length) { const hay = it._hay; return q.every(t => hay.includes(t)); }
+      return true;
+    });
+    const sort = $("sort").value;
+    if (sort === "diff") out.sort((a, b) => Math.abs(pays(b, "evergreen") - pays(b, "wesley")) - Math.abs(pays(a, "evergreen") - pays(a, "wesley")));
+    else if (sort === "price") out.sort((a, b) => Math.min(pays(a, "evergreen"), pays(a, "wesley")) - Math.min(pays(b, "evergreen"), pays(b, "wesley")));
+    else out.sort((a, b) => a.name.localeCompare(b.name));
+    return out;
+  }
+
+  function render() {
+    const out = current();
+    $("list").innerHTML = out.length
+      ? out.slice(0, shown).map(rowHtml).join("")
+      : `<div class="empty">No products match. Try a shorter search or another department.</div>`;
+    $("count").textContent = `${out.length.toLocaleString()} product${out.length === 1 ? "" : "s"}`;
+    $("moreBtn").hidden = out.length <= shown;
+    renderBasket();
+  }
+
+  function renderBasket() {
+    const chosen = items.filter(it => basket.has(String(it.id)));
+    $("basket").hidden = chosen.length === 0;
+    if (!chosen.length) return;
+    const e = chosen.reduce((s, it) => s + pays(it, "evergreen"), 0);
+    const w = chosen.reduce((s, it) => s + pays(it, "wesley"), 0);
+    $("bN").textContent = chosen.length; $("bE").textContent = money(e); $("bW").textContent = money(w);
+    $("bWin").textContent = Math.abs(e - w) < 0.005 ? "Same total at both"
+      : `${e < w ? "Evergreen" : "Wesley"} saves you ${money(Math.abs(e - w))}`;
+  }
+
+  function score() {
+    let e = 0, w = 0, s = 0;
+    for (const it of items) { const r = winner(it); r === "e" ? e++ : r === "w" ? w++ : s++; }
+    $("sE").textContent = e.toLocaleString(); $("sW").textContent = w.toLocaleString(); $("sS").textContent = s.toLocaleString();
+  }
+
+  function init(data) {
+    items = data.items.filter(it => it.evergreen && it.wesley);
+    for (const it of items) it._hay = `${it.name} ${it.brand} ${it.category} ${it.subcategory}`.toLowerCase();
+    const cats = [...new Set(items.map(it => it.category).filter(Boolean))].sort();
+    $("cat").insertAdjacentHTML("beforeend", cats.map(c => `<option>${esc(c)}</option>`).join(""));
+    const m = data.meta || {};
+    if (m.updated) $("updated").textContent = `Updated ${new Date(m.updated).toLocaleString([], {dateStyle: "medium", timeStyle: "short"})}. ${(m.matched || items.length).toLocaleString()} products are sold at both stores (out of ${m.counts ? m.counts.evergreen.toLocaleString() + " at Evergreen and " + m.counts.wesley.toLocaleString() + " at Wesley" : "each store's full list"}).`;
+    if (m.sample) { const n = $("notice"); n.hidden = false; n.textContent = `Example data: ${items.length} products pulled from both stores on ${new Date(m.updated).toLocaleDateString([], {month: "long", day: "numeric"})}. The daily update fills in all of them.`; }
+    score(); render();
+  }
+
+  $("q").addEventListener("input", () => { shown = PAGE; render(); });
+  $("cat").addEventListener("change", () => { shown = PAGE; render(); });
+  $("sort").addEventListener("change", render);
+  $("moreBtn").addEventListener("click", () => { shown += PAGE; render(); });
+  document.querySelectorAll(".chip").forEach(b => b.addEventListener("click", () => {
+    filter = b.dataset.f; shown = PAGE;
+    document.querySelectorAll(".chip").forEach(c => c.setAttribute("aria-pressed", String(c === b)));
+    render();
+  }));
+  $("list").addEventListener("click", ev => {
+    const b = ev.target.closest(".add"); if (!b) return;
+    const id = b.dataset.id; basket.has(id) ? basket.delete(id) : basket.add(id);
+    saveBasket(); render();
+  });
+  $("bClear").addEventListener("click", () => { basket.clear(); saveBasket(); render(); });
+
+  const inline = $("inline-data").textContent.trim();
+  if (inline) init(JSON.parse(inline));
+  else fetch("data/compare.json").then(r => r.json()).then(init)
+    .catch(() => { $("list").innerHTML = `<div class="empty">Couldn't load the price list. Refresh the page to try again.</div>`; });
+})();
+</script>
+<!--/page-->
+</body>
+</html>
